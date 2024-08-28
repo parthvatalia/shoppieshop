@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shoppieshop/providers/products_provider.dart';
 
 import '../models/product.dart';
 import '../providers/auth_provider.dart';
@@ -11,92 +12,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ProductListingScreen extends StatelessWidget {
   ProductListingScreen({Key? key}) : super(key: key);
 
-  final List<Product> products = [
-    Product(
-      id: 'p1',
-      title: 'Red Shirt',
-      description: 'A red shirt - it is pretty red!',
-      price: 29.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2013/07/12/15/34/shirt-150087_1280.png",
-    ),
-    Product(
-      id: 'p2',
-      title: 'Blue Jeans',
-      description: 'A nice pair of blue jeans.',
-      price: 59.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2013/07/12/18/22/t-shirt-153369_1280.png",
-    ),
-    Product(
-      id: 'p3',
-      title: 'Green Hoodie',
-      description: 'A warm green hoodie for winter.',
-      price: 89.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2016/07/26/07/16/hoodie-1542198_1280.png",
-    ),
-    Product(
-      id: 'p4',
-      title: 'Black Sneakers',
-      description: 'Stylish black sneakers.',
-      price: 79.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2014/03/25/16/35/lace-up-shoes-297486_1280.png",
-    ),
-    Product(
-      id: 'p5',
-      title: 'White Cap',
-      description: 'A simple white cap.',
-      price: 19.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2014/04/02/14/10/hat-306380_1280.png",
-    ),
-    Product(
-      id: 'p6',
-      title: 'Leather Wallet',
-      description: 'A classic leather wallet.',
-      price: 49.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2023/08/12/02/59/wallet-8184645_640.png",
-    ),
-    Product(
-      id: 'p7',
-      title: 'Blue Scarf',
-      description: 'A cozy blue scarf.',
-      price: 34.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2021/04/27/18/36/scarf-6212163_640.png",
-    ),
-    Product(
-      id: 'p8',
-      title: 'Stylish Sunglasses',
-      description: 'Sunglasses with a modern design.',
-      price: 29.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2016/05/09/14/47/glasses-1381709_640.png",
-    ),
-    Product(
-      id: 'p9',
-      title: 'Casual Jacket',
-      description: 'A casual jacket for daily wear.',
-      price: 99.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2017/06/27/01/11/jacket-2445833_1280.png",
-    ),
-    Product(
-      id: 'p10',
-      title: 'Red Beanie',
-      description: 'A warm red beanie.',
-      price: 24.99,
-      imageUrl:
-          "https://cdn.pixabay.com/photo/2014/04/03/10/52/winter-311566_1280.png",
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context);
+    final products = Provider.of<ProductsProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
@@ -124,14 +42,14 @@ class ProductListingScreen extends StatelessWidget {
       body: AnimationLimiter(
         child: GridView.builder(
           padding: const EdgeInsets.all(10.0),
-          itemCount: products.length,
+          itemCount: products.items.length,
           itemBuilder: (ctx, i) => AnimationConfiguration.staggeredGrid(
             position: i,
             duration: const Duration(milliseconds: 375),
             columnCount: 2,
             child: ScaleAnimation(
               child: FadeInAnimation(
-                child: ProductItem(product: products[i]),
+                child: ProductItem(product: products.items[i]),
               ),
             ),
           ),
@@ -170,7 +88,7 @@ class ProductItem extends StatelessWidget {
         trailing: IconButton(
           icon: const Icon(Icons.shopping_cart),
           onPressed: () {
-            cart.addItem(product.id, product.price, product.title);
+            cart.addItem(product.id, product.price, product.title,product.imageUrl);
             scaffold.showSnackBar(
               SnackBar(
                 content: const Text(
@@ -180,7 +98,7 @@ class ProductItem extends StatelessWidget {
                 action: SnackBarAction(
                   label: 'UNDO',
                   onPressed: () {
-                    cart.removeItem(product.id);
+                    cart.removeItem(product.id,context);
                   },
                 ),
               ),
@@ -221,9 +139,11 @@ class ProductItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(onPressed: (){
-                Navigator.pop(context);
-              }, icon: Icon(Icons.close)),
+              IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.close)),
             ],
           ),
           Padding(
@@ -233,7 +153,7 @@ class ProductItem extends StatelessWidget {
               height: 200,
               width: double.infinity,
               placeholder: (context, url) =>
-              const Center(child: CircularProgressIndicator()),
+                  const Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => const Icon(Icons.error),
               fit: BoxFit.contain,
             ),

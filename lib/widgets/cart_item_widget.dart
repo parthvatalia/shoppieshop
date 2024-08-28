@@ -33,7 +33,7 @@ class CartItemWidget extends StatelessWidget {
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        cart.removeItem(productId);
+        cart.removeItem(productId,context);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(

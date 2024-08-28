@@ -6,56 +6,73 @@ import '../models/cart.dart';
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};
 
-  Map<String, CartItem> get items => {..._items};
+  Map<String, CartItem> get items => _items;
 
   double get totalAmount {
-    var total = 0.0;
-    _items.forEach((key, cartItem) {
-      total += cartItem.price * cartItem.quantity;
-    });
-    return total;
+    return _items.values
+        .fold(0.0, (sum, item) => sum + item.price * item.quantity);
   }
 
-  int get itemCount {
-    return _items.length;
-  }
-
-  void addItem(String productId, double price, String title) {
+  void addItem(String productId, double price, String title, String imageUrl) {
     if (_items.containsKey(productId)) {
       _items.update(
         productId,
         (existingCartItem) => CartItem(
-          id: existingCartItem.id,
-          title: existingCartItem.title,
-          quantity: existingCartItem.quantity + 1,
-          price: existingCartItem.price,
-        ),
+            id: existingCartItem.id,
+            title: existingCartItem.title,
+            quantity: existingCartItem.quantity + 1,
+            price: existingCartItem.price,
+            imageUrl: existingCartItem.imageUrl),
       );
     } else {
       _items.putIfAbsent(
         productId,
         () => CartItem(
-          id: DateTime.now().toString(),
-          title: title,
-          quantity: 1,
-          price: price,
-        ),
+            id: productId,
+            title: title,
+            quantity: 1,
+            price: price,
+            imageUrl: imageUrl),
       );
     }
     saveCartToLocalStorage();
     notifyListeners();
   }
 
-  void removeItem(String productId) {
+  void removeItem(String productId,BuildContext context) {
     _items.remove(productId);
     saveCartToLocalStorage();
     notifyListeners();
+    if (_items.isEmpty) {
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+    }
   }
+
 
   void clearCart() {
     _items = {};
     saveCartToLocalStorage();
     notifyListeners();
+  }
+
+  void updateQuantity(String id, int quantity) {
+    if (_items.containsKey(id)) {
+      _items.update(
+        id,
+        (existingCartItem) => CartItem(
+          id: existingCartItem.id,
+          title: existingCartItem.title,
+          price: existingCartItem.price,
+          imageUrl: existingCartItem.imageUrl,
+          quantity: quantity,
+        ),
+      );
+      print(quantity);
+      saveCartToLocalStorage();
+      notifyListeners();
+    }
   }
 
   Future<void> addOrder() async {
@@ -64,7 +81,7 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> completeOrder() async {
+  Future<void> completeOrder(address, paymentMethod) async {
     _items.clear();
     clearCart();
     notifyListeners();

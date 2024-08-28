@@ -40,6 +40,13 @@ class AuthScreenState extends State<AuthScreen>
     _controller.forward();
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _submitAuthForm(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     try {
@@ -68,13 +75,17 @@ class AuthScreenState extends State<AuthScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: MediaQuery.of(context).size.height * 0.3,
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.3,
               child: Lottie.asset(
-                  _isSignUp ? "assets/lottie/signup.json": "assets/lottie/signin.json",
-                  repeat: true
-              ),
+                  _isSignUp
+                      ? "assets/lottie/signup.json"
+                      : "assets/lottie/signin.json",
+                  repeat: true),
             ),
-            const SizedBox(height: 40,),
+            const SizedBox(
+              height: 40,
+            ),
             FadeTransition(
               opacity: _opacityAnimation,
               child: SlideTransition(
